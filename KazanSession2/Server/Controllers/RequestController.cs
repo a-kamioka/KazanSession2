@@ -27,7 +27,7 @@ namespace KazanSession2.Server.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post(EmergencyMaintenance _em)
+        public IActionResult Post([FromBody] EmergencyMaintenance _em)
         {
             db.EmergencyMaintenances.Add(_em);
             db.SaveChanges();

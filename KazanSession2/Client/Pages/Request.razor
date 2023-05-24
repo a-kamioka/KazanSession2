@@ -41,7 +41,7 @@
             </dl>
         </EditForm>
         <button @onclick="OnSend">Send Request</button>
-        <button>Cancel</button>
+        <button @onclick="OnCancel">Cancel</button>
     </div>
 }
 else
@@ -62,7 +62,6 @@ else
     const string apiUrl = "api/request";
     EmergencyMaintenance _em = new();
     private string? _errMsg;
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -92,5 +91,10 @@ else
             _errMsg = "Please fill description and consideration.";
             StateHasChanged();
         }
+    }
+
+    private void OnCancel()
+    {
+        Nav.NavigateTo($"party/{Nav.HistoryEntryState}", false);
     }
 }

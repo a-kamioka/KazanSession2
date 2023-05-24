@@ -13,6 +13,7 @@ namespace KazanSession2.Server.Controllers
         private readonly DB db;
         public MaintenanceController(DB db) => this.db = db;
 
+        [HttpGet]
         public IActionResult Get()
         {
             return Ok(db.EmergencyMaintenances.Include(a => a.Asset).Where(a => a.EmendDate != null).OrderByDescending(a => a.PriorityId).Select(a => new EMList
@@ -26,16 +27,17 @@ namespace KazanSession2.Server.Controllers
             }));
         }
 
+        [HttpPost]
         public IActionResult Post()
         {
             return Ok();
         }
 
         [Route("api/[controller]/detail")]
-        [HttpGet]
-        public IActionResult GetDetail(long Id)
+        [HttpGet("{id}")]
+        public IActionResult GetDetail(long id)
         {
-            return Ok(db.EmergencyMaintenances.Where(a => a.Id == Id).Include(a => a.Asset).Select(a => new SelectedAsset
+            return Ok(db.EmergencyMaintenances.Where(a => a.Id == id).Include(a => a.Asset).Select(a => new SelectedAsset
             {
                 Id = a.Id,
                 AssetSn = a.Asset.AssetSn,

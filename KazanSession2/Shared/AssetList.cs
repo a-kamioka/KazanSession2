@@ -15,5 +15,6 @@ public partial class AssetList
     public DateTime? EmendDate { get; set; }
 
     public long? ClosedNumber { get; set; }
+
     public long? EmNumber { get; set; } 
 }
