@@ -1,0 +1,87 @@
+﻿@page "/party/{id}"
+
+@using KazanSession2.Shared
+@using Microsoft.AspNetCore.WebUtilities
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<PageTitle>Emergency Maintenance Management</PageTitle>
+
+<h3>Available Assets:</h3>
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th scope="col">Asset SN</th>
+                <th scope="col">Asset Name</th>
+                <th scope="col">Last Closed EM</th>
+                <th scope="col">Number of EMs</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (_assets != null)
+            {
+                @foreach (AssetList asset in _assets)
+                {
+                    string _trColor = "";
+                    string _bgColor = "";
+                    if (asset.Id == _selectedAssetId) _trColor = "gray";
+                    if (asset.EmNumber != asset.ClosedNumber) _bgColor = "red";
+                    <tr style="background-color:@_trColor" @onclick="(() => SelectAsset(asset))">
+                        <td><span style="background-color:@_bgColor">@asset.AssetSn</span></td>
+                        <td><span style="background-color:@_bgColor">@asset.AssetName</span></td>
+                        <td><span style="background-color:@_bgColor">@asset.EmendDate</span></td>
+                        <td><span style="background-color:@_bgColor">@asset.ClosedNumber</span></td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>Loading...</tr>
+            }
+            
+        </tbody>
+    </table>
+</div>
+<button class="mb-3" @onclick="OnClick">Send Emergency Maintenance Request</button>
+@if (_errFlag)
+{
+    <p class="text-danger">Please select an asset.</p>
+}
+
+
+@code {
+    const string apiUrl = "api/party";
+    private AssetList[]? _assets;
+    //[SupplyParameterFromQuery]
+    [Parameter]
+    public string? Id { get; set; }
+    private long _selectedAssetId = -1;
+    private bool _errFlag = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _assets = await Http.GetFromJsonAsync<AssetList[]>($"{apiUrl}/{Id}");
+    }
+
+    private void SelectAsset(AssetList asset)
+    {
+        if (asset.EmNumber == asset.ClosedNumber) _selectedAssetId = asset.Id;
+    }
+
+    private void OnClick()
+    {
+        if (_selectedAssetId > 0)
+        {
+            Nav.NavigateTo($"/request/{_selectedAssetId}", new NavigationOptions
+            {
+                    HistoryEntryState = this.Id,
+            });
+        }
+        else
+        {
+            _errFlag = true;
+            StateHasChanged();
+        }
+    }
+}

@@ -1,0 +1,73 @@
+﻿@page "/"
+
+@using KazanSession2.Shared.Models
+@using System.Text.Json
+@using Microsoft.AspNetCore.WebUtilities
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<PageTitle>Login</PageTitle>
+
+<div class="text-center vh-100 d-flex align-items-center">
+    <div class="form-signin">
+        <EditForm Model="@employee" class="mb-5">
+            <h1 class="h3 mb-3 fw-normal">Sign in to EM management</h1>
+            <div class="form-floating mb-3">
+                <InputText id="username" class="form-control" placeholder="Username" @bind-Value="employee.Username"></InputText>
+                <label for="username">Username</label>
+            </div>
+            <div class="form-floating mb-3">
+                <InputText id="password" class="form-control" type="password" placeholder="Password" @bind-Value="employee.Password"></InputText>
+                <label for="password">Password</label>
+            </div>
+            <button class="w-100 btn btn-lg btn-primary" type="submit" disabled="@loading" @onclick="OnLogin">
+                Sign in
+                @if (loading)
+                {
+                    <span>...</span>
+                }
+            </button>
+        </EditForm>
+        @if (authFailed)
+        {
+            <p class="text-danger">認証に失敗しました</p>
+        }
+    </div>
+</div>
+
+@code {
+    const string apiUrl = "api/login";
+
+    Employee employee = new Employee(){ FirstName = "", LastName = "", Phone = "", IsAdmin = null };
+    private bool authFailed = false;
+    bool loading = false;
+
+    private async void OnLogin()
+    {
+        loading = true;
+        HttpResponseMessage response = await Http.PostAsJsonAsync<Employee>(apiUrl, employee);
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            Employee _employee = await response.Content.ReadFromJsonAsync<Employee>();
+            if (_employee.IsAdmin != null)
+            {
+                Nav.NavigateTo($"/manager", false);
+            }
+            else
+            {
+                //var _queryParams = new Dictionary<string, string>
+                //{
+                //    ["id"] = _employee.Id.ToString()
+                //};
+                //Nav.NavigateTo(QueryHelpers.AddQueryString("/party", _queryParams), false);
+                Nav.NavigateTo($"/party/{_employee.Id}", false);
+            }
+        }
+        else
+        {
+            authFailed = true;
+            loading = false;
+            StateHasChanged();
+        }
+    }
+}

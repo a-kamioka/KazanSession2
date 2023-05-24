@@ -1,0 +1,96 @@
+﻿@page "/request/{id}"
+
+@using KazanSession2.Shared
+@using KazanSession2.Shared.Models
+@using Microsoft.AspNetCore.WebUtilities
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<PageTitle>Emergency Maintenace Request</PageTitle>
+@if (_asset != null)
+{
+    <div class="container p-2">
+        <div class="border border-2 border-dark p-2 mb-2">
+            <p>Selected Asset</p>
+            <div class="d-flex justify-content-between">
+                <div><label>Asset SN: @_asset.AssetSn</label></div>
+                <div><label>Asset Name: @_asset.AssetName</label></div>
+                <div><label>Department: @_asset.DepartmentName</label></div>
+            </div>
+        </div>
+        <EditForm Model="@_em" class="border border-2 border-dark p-2 mb-2">
+            <p>Request Report</p>
+            <dl>
+                <dt>Priority:</dt>
+                <dd>
+                    <InputSelect @bind-Value="_em.PriorityId">
+                        <option value="-1">---</option>
+                        @if (_priorities != null)
+                        {
+                            @foreach (var _priority in _priorities)
+                            {
+                                <option value="@_priority.Id">@_priority.Name</option>
+                            }
+                        }
+                    </InputSelect>
+                </dd>
+                <dt>Description of Emergency:</dt>
+                <dd><InputTextArea id="description" @bind-Value="_em.DescriptionEmergency" /></dd>
+                <dt>Other Considerations:</dt>
+                <dd><InputTextArea id="considerration" @bind-Value="_em.OtherConsiderations" /></dd>
+            </dl>
+        </EditForm>
+        <button @onclick="OnSend">Send Request</button>
+        <button>Cancel</button>
+    </div>
+}
+else
+{
+    <p>Loading...</p>
+}
+@if (_errMsg != null)
+{
+    <p class="text-danger">@_errMsg</p>
+}
+
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+    private SelectedAsset? _asset;
+    private Priority[]? _priorities;
+    const string apiUrl = "api/request";
+    EmergencyMaintenance _em = new();
+    private string? _errMsg;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        _asset = await Http.GetFromJsonAsync<SelectedAsset>($"{apiUrl}/{Id}");
+        _priorities = await Http.GetFromJsonAsync<Priority[]>("api/priority");
+    }
+
+    private async void OnSend()
+    {
+        if (_em.PriorityId > 0 && _em.DescriptionEmergency != null && _em.OtherConsiderations != null)
+        {
+            _em.AssetId = Int64.Parse(this.Id);
+            _em.EmreportDate = DateTime.Today;
+            HttpResponseMessage _response = await Http.PostAsJsonAsync<EmergencyMaintenance>($"{apiUrl}", _em);
+            if (_response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                Nav.NavigateTo($"party/{Nav.HistoryEntryState}", false);
+            }
+            else
+            {
+                _errMsg = "Failed sending request.";
+                StateHasChanged();
+            }
+        }
+        else
+        {
+            _errMsg = "Please fill description and consideration.";
+            StateHasChanged();
+        }
+    }
+}
