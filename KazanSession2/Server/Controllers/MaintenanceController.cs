@@ -27,13 +27,6 @@ namespace KazanSession2.Server.Controllers
             }));
         }
 
-        [HttpPost]
-        public IActionResult Post()
-        {
-            return Ok();
-        }
-
-        [Route("api/[controller]/detail")]
         [HttpGet("{id}")]
         public IActionResult GetDetail(long id)
         {
@@ -44,6 +37,12 @@ namespace KazanSession2.Server.Controllers
                 AssetName = a.Asset.AssetName,
                 DepartmentName = a.Asset.DepartmentLocation.Department.Name
             }));
+        }
+
+        [HttpPost]
+        public IActionResult Post()
+        {
+            return Ok();
         }
     }
 }
