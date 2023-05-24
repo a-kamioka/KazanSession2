@@ -1,13 +1,66 @@
 ﻿@page "/manager"
 
+@using KazanSession2.Shared;
 @using KazanSession2.Shared.Models;
 @inject HttpClient Http;
 @inject NavigationManager Nav;
 
-<h3>Manager</h3>
-
-
+<PageTitle>Emergency Maintenance Management</PageTitle>
+<div>
+    <p>List of Assets Requesting EM:</p>
+    <table class="table table-striped table-sm mb-3">
+        <thead>
+            <tr>
+                <th scope="col">Asset SN</th>
+                <th scope="col">Asset Name</th>
+                <th scope="col">Request Date</th>
+                <th scope="col">Employee Full Name</th>
+                <th scope="col">Department</th>
+            </tr>
+            @if (_emList != null)
+            {
+                @foreach (EMList _em in _emList)
+                {
+                    string _bgColor = "";
+                    if (_em.Id == _selectedEmId) _bgColor = "gray";
+                    <tr style="background-color:@_bgColor" @onclick="(() => SelectEM(_em))">
+                        <td>@_em.AssetSn</td>
+                        <td>@_em.AssetName</td>
+                        <td>@_em.EmRequestDate</td>
+                        <td>@_em.FullName</td>
+                        <td>@_em.Department</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>Loading...</tr>
+            }
+        </thead>
+    </table>
+    <button @onclick="OnClick">Manage Request</button>
+</div>
 
 @code {
+    private string apiUrl = "api/maintenance";
+    private EMList[]? _emList;
+    private long _selectedEmId = -1;
 
+    protected override async Task OnInitializedAsync()
+    {
+        _emList = await Http.GetFromJsonAsync<EMList[]>(apiUrl);
+    }
+
+    private void SelectEM(EMList _em)
+    {
+        _selectedEmId = _em.Id;
+    }
+
+    private void OnClick()
+    {
+        if (_selectedEmId > 0)
+        {
+            Nav.NavigateTo($"detail/{_selectedEmId}", false);
+        }
+    }
 }
