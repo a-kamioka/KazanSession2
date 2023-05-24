@@ -1,4 +1,4 @@
-﻿using KazanSession2.Shared;
+using KazanSession2.Shared;
 using KazanSession2.Shared.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +16,7 @@ namespace KazanSession2.Server.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            return Ok(db.EmergencyMaintenances.Include(a => a.Asset).Where(a => a.EmendDate != null).OrderByDescending(a => a.PriorityId).Select(a => new EMList
+            return Ok(db.EmergencyMaintenances.Include(a => a.Asset).Where(a => a.EmendDate.HasValue).OrderByDescending(a => a.PriorityId).Select(a => new EMList
             {
                 Id = a.Id,
                 AssetSn = a.Asset.AssetSn,
@@ -30,13 +30,13 @@ namespace KazanSession2.Server.Controllers
         [HttpGet("{id}")]
         public IActionResult GetDetail(long id)
         {
-            return Ok(db.EmergencyMaintenances.Where(a => a.Id == id).Include(a => a.Asset).Select(a => new SelectedAsset
+            return Ok(db.EmergencyMaintenances.Include(a => a.Asset).Select(a => new SelectedAsset
             {
                 Id = a.Id,
                 AssetSn = a.Asset.AssetSn,
                 AssetName = a.Asset.AssetName,
                 DepartmentName = a.Asset.DepartmentLocation.Department.Name
-            }));
+            })).Single(a => a.Id == id);
         }
 
         [HttpPost]
