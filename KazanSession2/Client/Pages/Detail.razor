@@ -1,7 +1,143 @@
 ﻿@page "/detail/{id}"
 
-<h3>Detail</h3>
+@using KazanSession2.Shared;
+@using KazanSession2.Shared.Models;
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<PageTitle>Emergency Maintenance Request Details</PageTitle>
+@if (_asset != null)
+{
+    <div class="container p-2">
+        <div class="border border-2 border-dark p-2 mb-2">
+            <p>Selected Asset</p>
+            <div class="d-flex justify-content-between">
+                <div><label>Asset SN: @_asset.AssetSn</label></div>
+                <div><label>Asset Name: @_asset.AssetName</label></div>
+                <div><label>Department: @_asset.DepartmentName</label></div>
+            </div>
+        </div>
+        <EditForm Model="@_em" class="border border-2 border-dark p-2 mb-2">
+            <div class="d-flex mb-2">
+                <div class="w-50"><label>Start Date: </label><InputDate @bind-Value="_em.EmstartDate" /></div>
+                <div class="w-50"><label>Completed On: </label><InputDate @bind-Value="_em.EmendDate" /></div>
+            </div>
+            <label>Technician Note:</label><br>
+            <InputTextArea id="technicianNote" @bind-Value="_em.EmtechnicianNote" />
+        </EditForm>
+        <div class="border border-2 border-dark p-2 mb-2">
+            <div class="d-flex mb-2">
+                <div class="w-50">
+                    <label>Part Name: </label>
+                    <select @bind="PartId">
+                        <option value="-1">---</option>
+                        @if (_parts != null)
+                        {
+                            @foreach (var _part in _parts)
+                            {
+                                <option value="@_part.Id">@_part.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div><label>Amount: </label><input type="number" @bind-value="_amount" /></div>
+                <div style="margin: 0 0 0 auto" @onclick="OnAddButton"><button>Add to list</button></div>
+            </div>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Part name</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                    @if (_changedParts != null)
+                    {
+                        @foreach (var _part in _changedParts)
+                        {
+                            <tr>
+                                <td>@_parts.Single(a => a.Id == _part.PartId).Name</td>
+                                <td>@_part.Amount</td>
+                                <td><button @onclick="(() => _changedParts.Remove(_part))">Remove</button></td>
+                            </tr>
+                        }
+                    }
+                </thead>
+            </table>
+        </div>
+        <div class="mb-3">
+            <button @onclick="OnSubmit">Submit</button>
+            <button @onclick="OnCancel">Cancel</button>
+        </div>
+        @if (_errMsg != null)
+        {
+            <p class="text-danger">@_errMsg</p>
+        }
+    </div>
+}
+else
+{
+    <p>Loading...</p>
+}
 
 @code {
+    [Parameter]
+    public string? Id { get; set; }
+    private const string _apiUrl = "api/maintenance";
+    private SelectedAsset? _asset;
+    private Part[]? _parts;
+    EmergencyMaintenance? _em = new();
+    private List<ChangedPart>? _changedParts = new();
+    private long PartId { get; set; }
+    private long _amount;
+    private string? _errMsg;
 
+    protected override async Task OnInitializedAsync()
+    {
+        _asset = await Http.GetFromJsonAsync<SelectedAsset>($"{_apiUrl}/{Id}");
+        _parts = await Http.GetFromJsonAsync<Part[]>("api/parts");
+    }
+
+    private void OnAddButton()
+    {
+        if (_amount > 0)
+        {
+            _changedParts.Add(new ChangedPart()
+                {
+                    EmergencyMaintenanceId = Int64.Parse(this.Id),
+                    PartId = this.PartId,
+                    Amount = this._amount
+                });
+            PartId = -1;
+            _amount = 0;
+        }
+        else
+        {
+            _errMsg = "The amount must be a positive number.";
+            StateHasChanged();
+        }
+    }
+
+    private async void OnSubmit()
+    {
+        if (_em.EmstartDate.HasValue)
+        {
+            _em.Id = Int64.Parse(this.Id);
+            HttpResponseMessage _response = await Http.PutAsJsonAsync<EmergencyMaintenance>(_apiUrl, _em);
+            if (_changedParts != null)
+            {
+                HttpResponseMessage _CPresponse = await Http.PostAsJsonAsync<List<ChangedPart>>("api/changedpart", _changedParts);
+            }
+            Nav.NavigateTo("manager", false);
+        }
+        else
+        {
+            _errMsg = "The start date is required.";
+            StateHasChanged();
+        }
+    }
+
+    private void OnCancel()
+    {
+        Nav.NavigateTo("manager", false);
+    }
 }

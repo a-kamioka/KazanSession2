@@ -16,7 +16,7 @@ namespace KazanSession2.Server.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            return Ok(db.EmergencyMaintenances.Include(a => a.Asset).Where(a => a.EmendDate != null).OrderByDescending(a => a.PriorityId).Select(a => new EMList
+            return Ok(db.EmergencyMaintenances.Include(a => a.Asset).Where(a => a.EmendDate == null).OrderByDescending(a => a.PriorityId).OrderBy(a => a.EmreportDate).Select(a => new EMList
             {
                 Id = a.Id,
                 AssetSn = a.Asset.AssetSn,
@@ -30,18 +30,24 @@ namespace KazanSession2.Server.Controllers
         [HttpGet("{id}")]
         public IActionResult GetDetail(long id)
         {
-            return Ok(db.EmergencyMaintenances.Where(a => a.Id == id).Include(a => a.Asset).Select(a => new SelectedAsset
+            return Ok(db.EmergencyMaintenances.Include(a => a.Asset).Select(a => new SelectedAsset
             {
                 Id = a.Id,
                 AssetSn = a.Asset.AssetSn,
                 AssetName = a.Asset.AssetName,
                 DepartmentName = a.Asset.DepartmentLocation.Department.Name
-            }));
+            }).Single(a => a.Id == id));
         }
 
-        [HttpPost]
-        public IActionResult Post()
+        [HttpPut]
+        public async Task<IActionResult> Post([FromBody] EmergencyMaintenance _em)
         {
+            // db.Entry(_em).State = EntityState.Modified;
+            EmergencyMaintenance? _target = db.EmergencyMaintenances.Find(_em.Id);
+            _target.EmstartDate = _em.EmstartDate;
+            _target.EmendDate = _em.EmendDate;
+            _target.EmtechnicianNote = _em.EmtechnicianNote;
+            await db.SaveChangesAsync();
             return Ok();
         }
     }
