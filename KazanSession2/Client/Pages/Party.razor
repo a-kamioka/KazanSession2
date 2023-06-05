@@ -2,6 +2,7 @@
 
 @using KazanSession2.Shared
 @using Microsoft.AspNetCore.WebUtilities
+@using System.IdentityModel.Tokens.Jwt
 @inject HttpClient Http
 @inject NavigationManager Nav
 @inject Blazored.SessionStorage.ISessionStorageService sessionStorage
@@ -63,9 +64,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        //string _authToken = await sessionStorage.GetItemAsync<string>("token");
+        string _authToken = await sessionStorage.GetItemAsync<string>("token");
         //Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
-        _assets = await Http.GetFromJsonAsync<AssetList[]>($"{apiUrl}/{Id}");
+        var _jwt = new JwtSecurityTokenHandler().ReadJwtToken(_authToken);
+        string _id = _jwt.Claims.First(c => c.Type == "Id").Value;
+        _assets = await Http.GetFromJsonAsync<AssetList[]>($"{apiUrl}/{_id}");
     }
 
     private void SelectAsset(AssetList asset)

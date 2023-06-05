@@ -21,7 +21,7 @@ namespace KazanSession2.Server.Controllers
             var _claims = new[]
             {
                 new Claim(ClaimTypes.Name, _employee.Username),
-                new Claim(JwtRegisteredClaimNames.Sub, _employee.Id.ToString())
+                new Claim("Id", _employee.Id.ToString())
             };
 
             var _token = new JwtSecurityToken(issuer: "kinakolab.com", audience: "kinakolab.com", claims: _claims, expires: DateTime.Now.AddMinutes(60), signingCredentials: _credential);
