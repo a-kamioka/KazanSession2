@@ -1,5 +1,6 @@
 ﻿using KazanSession2.Shared;
 using KazanSession2.Shared.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ namespace KazanSession2.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class MaintenanceController : ControllerBase
     {
         private readonly DB db;

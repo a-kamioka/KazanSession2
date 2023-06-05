@@ -2,8 +2,9 @@
 
 @using KazanSession2.Shared;
 @using KazanSession2.Shared.Models;
-@inject HttpClient Http;
-@inject NavigationManager Nav;
+@inject HttpClient Http
+@inject NavigationManager Nav
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
 
 <PageTitle>Emergency Maintenance Management</PageTitle>
 <div class="container">
@@ -26,7 +27,7 @@
                     <tr style="background-color:@_bgColor" @onclick="(() => SelectEM(_em))">
                         <td>@_em.AssetSn</td>
                         <td>@_em.AssetName</td>
-                        <td>@_em.EmRequestDate</td>
+                        <td>@_em.EmRequestDate?.ToString("yyyy-MM-dd")</td>
                         <td>@_em.FullName</td>
                         <td>@_em.Department</td>
                     </tr>
@@ -48,6 +49,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        string _authToken = await sessionStorage.GetItemAsync<string>("token");
+        Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
         _emList = await Http.GetFromJsonAsync<EMList[]>(apiUrl);
     }
 

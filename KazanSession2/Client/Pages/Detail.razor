@@ -57,7 +57,7 @@
                             <tr>
                                 <td>@_parts.Single(a => a.Id == _part.PartId).Name</td>
                                 <td>@_part.Amount</td>
-                                <td><button @onclick="(() => _changedParts.Remove(_part))">Remove</button></td>
+                                <td><button class="btn btn-link" @onclick="(() => _changedParts.Remove(_part))">Remove</button></td>
                             </tr>
                         }
                     }

@@ -1,7 +1,10 @@
 using KazanSession2.Shared.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +16,20 @@ builder.Services.AddDbContext<DB>(a => a.UseSqlServer(builder.Configuration.GetC
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.SuppressModelStateInvalidFilter = true;
+});
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateAudience = true,
+        ValidAudience = "kinakolab.com",
+        ValidateIssuer = true,
+        ValidIssuer = "kinakolab.com",
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes("hdC126eNHjD/hHC1vkI4hD8SYuawA9NoiqCFScAMsKU="))
+    };
 });
 
 var app = builder.Build();
@@ -34,7 +51,9 @@ app.UseHttpsRedirection();
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
+app.UseAuthentication();
 app.UseRouting();
+app.UseAuthorization();
 
 
 app.MapRazorPages();

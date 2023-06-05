@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.WebUtilities
 @inject HttpClient Http
 @inject NavigationManager Nav
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
 
 <PageTitle>Emergency Maintenance Management</PageTitle>
 <div class="container">
@@ -30,7 +31,7 @@
                         <tr style="background-color:@_trColor" @onclick="(() => SelectAsset(asset))">
                             <td><span style="background-color:@_bgColor">@asset.AssetSn</span></td>
                             <td><span style="background-color:@_bgColor">@asset.AssetName</span></td>
-                            <td><span style="background-color:@_bgColor">@asset.EmendDate</span></td>
+                            <td><span style="background-color:@_bgColor">@asset.EmendDate?.ToString("yyyy-dd-MM")</span></td>
                             <td><span style="background-color:@_bgColor">@asset.ClosedNumber</span></td>
                         </tr>
                     }
@@ -62,6 +63,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        string _authToken = await sessionStorage.GetItemAsync<string>("token");
+        Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
         _assets = await Http.GetFromJsonAsync<AssetList[]>($"{apiUrl}/{Id}");
     }
 

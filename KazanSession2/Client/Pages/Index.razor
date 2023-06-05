@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.WebUtilities
 @inject HttpClient Http
 @inject NavigationManager Nav
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
 
 <PageTitle>Login</PageTitle>
 
@@ -49,6 +50,7 @@
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
             Employee _employee = await response.Content.ReadFromJsonAsync<Employee>();
+            await sessionStorage.SetItemAsStringAsync("token", _employee.Password);
             if (_employee.IsAdmin != null)
             {
                 Nav.NavigateTo($"/manager", false);
