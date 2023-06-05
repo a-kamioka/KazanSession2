@@ -50,7 +50,8 @@
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
             Employee _employee = await response.Content.ReadFromJsonAsync<Employee>();
-            await sessionStorage.SetItemAsStringAsync("token", _employee.Password);
+            //await sessionStorage.SetItemAsStringAsync("token", _employee.Password);
+            Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _employee.Password);
             if (_employee.IsAdmin != null)
             {
                 Nav.NavigateTo($"/manager", false);

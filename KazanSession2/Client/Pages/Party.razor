@@ -63,8 +63,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        string _authToken = await sessionStorage.GetItemAsync<string>("token");
-        Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
+        //string _authToken = await sessionStorage.GetItemAsync<string>("token");
+        //Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
         _assets = await Http.GetFromJsonAsync<AssetList[]>($"{apiUrl}/{Id}");
     }
 
