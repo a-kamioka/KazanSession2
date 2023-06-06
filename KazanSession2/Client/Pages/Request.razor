@@ -59,13 +59,13 @@ else
     public string? Id { get; set; }
     private SelectedAsset? _asset;
     private Priority[]? _priorities;
-    const string apiUrl = "api/request";
+    const string _apiUrl = "api/request";
     EmergencyMaintenance _em = new();
     private string? _errMsg;
 
     protected override async Task OnInitializedAsync()
     {
-        _asset = await Http.GetFromJsonAsync<SelectedAsset>($"{apiUrl}/{Id}");
+        _asset = await Http.GetFromJsonAsync<SelectedAsset>($"{_apiUrl}/{Id}");
         _priorities = await Http.GetFromJsonAsync<Priority[]>("api/priority");
     }
 
@@ -75,10 +75,11 @@ else
         {
             _em.AssetId = Int64.Parse(this.Id);
             _em.EmreportDate = DateTime.Today;
-            HttpResponseMessage _response = await Http.PostAsJsonAsync<EmergencyMaintenance>($"{apiUrl}", _em);
-            if (_response.StatusCode == System.Net.HttpStatusCode.OK)
+            HttpResponseMessage response = await Http.PostAsJsonAsync<EmergencyMaintenance>($"{_apiUrl}", _em);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                Nav.NavigateTo($"party/{Nav.HistoryEntryState}", false);
+                //Nav.NavigateTo($"party/{Nav.HistoryEntryState}", false);
+                Nav.NavigateTo($"party", false);
             }
             else
             {
@@ -95,6 +96,7 @@ else
 
     private void OnCancel()
     {
-        Nav.NavigateTo($"party/{Nav.HistoryEntryState}", false);
+        //Nav.NavigateTo($"party/{Nav.HistoryEntryState}", false);
+        Nav.NavigateTo($"party", false);
     }
 }

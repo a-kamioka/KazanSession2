@@ -18,8 +18,8 @@ namespace KazanSession2.Server.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(long id)
         {
-            var _list = db.Assets.Include(a => a.DepartmentLocation).ThenInclude(a => a.Department);
-            return Ok(_list.Select(a => new SelectedAsset
+            var list = db.Assets.Include(a => a.DepartmentLocation).ThenInclude(a => a.Department);
+            return Ok(list.Select(a => new SelectedAsset
             {
                 Id = a.Id,
                 AssetSn = a.AssetSn,
@@ -29,9 +29,9 @@ namespace KazanSession2.Server.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] EmergencyMaintenance _em)
+        public IActionResult Post([FromBody] EmergencyMaintenance em)
         {
-            db.EmergencyMaintenances.Add(_em);
+            db.EmergencyMaintenances.Add(em);
             db.SaveChanges();
             return Ok();
         }

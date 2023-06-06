@@ -18,19 +18,13 @@ namespace KazanSession2.Server.Controllers
         public MaintenanceController(DB db) => this.db = db;
 
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult Get([FromHeader] string Authorization)
         {
-            string _token = "";
-            StringValues _values;
-            Request.Headers.TryGetValue("Authorization", out _values);
-            foreach (var _value in _values)
-            {
-                _token += _value + " ";
-            }
-            var _jwt = new JwtSecurityTokenHandler().ReadJwtToken(_token.Split(' ')[1]);
-            long _id = Int64.Parse(_jwt.Claims.First(c => c.Type == "Id").Value);
-            Employee _employee = db.Employees.Find(_id);
-            if (_employee.IsAdmin != true) return Forbid();
+            string token = Authorization.Split(' ')[1];
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+            long id = Int64.Parse(jwt.Claims.First(c => c.Type == "Id").Value);
+            Employee employee = db.Employees.Find(id);
+            if (employee.IsAdmin != true) return Forbid();
 
             return Ok(db.EmergencyMaintenances.Include(a => a.Asset).Where(a => a.EmendDate == null).OrderByDescending(a => a.PriorityId).OrderBy(a => a.EmreportDate).Select(a => new EMList
             {

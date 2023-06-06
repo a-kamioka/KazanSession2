@@ -1,4 +1,4 @@
-﻿@page "/party/{id}"
+﻿@page "/party"
 
 @using KazanSession2.Shared
 @using Microsoft.AspNetCore.WebUtilities
@@ -57,17 +57,18 @@
     const string apiUrl = "api/party";
     private AssetList[]? _assets;
     //[SupplyParameterFromQuery]
-    [Parameter]
-    public string? Id { get; set; }
+    //[Parameter]
+    //public string? Id { get; set; }
+    private string? _id;
     private long _selectedAssetId = -1;
     private bool _errFlag = false;
 
     protected override async Task OnInitializedAsync()
     {
-        string _authToken = await sessionStorage.GetItemAsync<string>("token");
+        string authToken = await sessionStorage.GetItemAsync<string>("token");
         //Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
-        var _jwt = new JwtSecurityTokenHandler().ReadJwtToken(_authToken);
-        string _id = _jwt.Claims.First(c => c.Type == "Id").Value;
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(authToken);
+        _id = jwt.Claims.First(c => c.Type == "Id").Value;
         _assets = await Http.GetFromJsonAsync<AssetList[]>($"{apiUrl}/{_id}");
     }
 
@@ -80,10 +81,11 @@
     {
         if (_selectedAssetId > 0)
         {
-            Nav.NavigateTo($"/request/{_selectedAssetId}", new NavigationOptions
-            {
-                    HistoryEntryState = this.Id,
-            });
+            //Nav.NavigateTo($"/request/{_selectedAssetId}", new NavigationOptions
+            //{
+            //        HistoryEntryState = this._id,
+            //});
+            Nav.NavigateTo($"/request/{_selectedAssetId}", false);
         }
         else
         {

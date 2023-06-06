@@ -11,25 +11,25 @@
 
 <div class="text-center vh-100 d-flex align-items-center">
     <div class="form-signin">
-        <EditForm Model="@employee" class="mb-5">
+        <EditForm Model="@_employee" class="mb-5">
             <h1 class="h3 mb-3 fw-normal">Sign in to EM management</h1>
             <div class="form-floating mb-3">
-                <InputText id="username" class="form-control" placeholder="Username" @bind-Value="employee.Username"></InputText>
+                <InputText id="username" class="form-control" placeholder="Username" @bind-Value="_employee.Username"></InputText>
                 <label for="username">Username</label>
             </div>
             <div class="form-floating mb-3">
-                <InputText id="password" class="form-control" type="password" placeholder="Password" @bind-Value="employee.Password"></InputText>
+                <InputText id="password" class="form-control" type="password" placeholder="Password" @bind-Value="_employee.Password"></InputText>
                 <label for="password">Password</label>
             </div>
-            <button class="w-100 btn btn-lg btn-primary" type="submit" disabled="@loading" @onclick="OnLogin">
+            <button class="w-100 btn btn-lg btn-primary" type="submit" disabled="@_loading" @onclick="OnLogin">
                 Sign in
-                @if (loading)
+                @if (_loading)
                 {
                     <span>...</span>
                 }
             </button>
         </EditForm>
-        @if (authFailed)
+        @if (_authFailed)
         {
             <p class="text-danger">Login failed.</p>
         }
@@ -39,20 +39,20 @@
 @code {
     const string apiUrl = "api/login";
 
-    Employee employee = new Employee(){ FirstName = "", LastName = "", Phone = "", IsAdmin = null };
-    private bool authFailed = false;
-    bool loading = false;
+    Employee _employee = new Employee(){ FirstName = "", LastName = "", Phone = "", IsAdmin = null };
+    private bool _authFailed = false;
+    bool _loading = false;
 
     private async void OnLogin()
     {
-        loading = true;
-        HttpResponseMessage response = await Http.PostAsJsonAsync<Employee>(apiUrl, employee);
+        _loading = true;
+        HttpResponseMessage response = await Http.PostAsJsonAsync<Employee>(apiUrl, _employee);
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
-            Employee _employee = await response.Content.ReadFromJsonAsync<Employee>();
-            await sessionStorage.SetItemAsStringAsync("token", _employee.Password);
-            Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _employee.Password);
-            if (_employee.IsAdmin != null)
+            Employee employee = await response.Content.ReadFromJsonAsync<Employee>();
+            await sessionStorage.SetItemAsStringAsync("token", employee.Password);
+            Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", employee.Password);
+            if (employee.IsAdmin != null)
             {
                 Nav.NavigateTo($"/manager", false);
             }
@@ -63,13 +63,13 @@
                 //    ["id"] = _employee.Id.ToString()
                 //};
                 //Nav.NavigateTo(QueryHelpers.AddQueryString("/party", _queryParams), false);
-                Nav.NavigateTo($"/party/{_employee.Id}", false);
+                Nav.NavigateTo($"/party", false);
             }
         }
         else
         {
-            authFailed = true;
-            loading = false;
+            _authFailed = true;
+            _loading = false;
             StateHasChanged();
         }
     }

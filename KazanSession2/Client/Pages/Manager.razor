@@ -43,7 +43,7 @@
 </div>
 
 @code {
-    private string apiUrl = "api/maintenance";
+    private string _apiUrl = "api/maintenance";
     private EMList[]? _emList;
     private long _selectedEmId = -1;
 
@@ -51,7 +51,7 @@
     {
         //string _authToken = await sessionStorage.GetItemAsync<string>("token");
         //Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authToken);
-        _emList = await Http.GetFromJsonAsync<EMList[]>(apiUrl);
+        _emList = await Http.GetFromJsonAsync<EMList[]>(_apiUrl);
     }
 
     private void SelectEM(EMList _em)
